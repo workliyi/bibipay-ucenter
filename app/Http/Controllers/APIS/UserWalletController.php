@@ -71,7 +71,7 @@ class UserWalletController extends Controller
             return 'code:40023';
         }
     }
-    //获取用户中心钱包信息接口
+    //获取用户中心单个钱包信息接口
     public function GetWalletDetail(Request $request , Users $users,ResponseFactoryContract $response){
         $user = $request->user;
         $key = $user->key;
@@ -85,8 +85,14 @@ class UserWalletController extends Controller
             'token_type' =>$isset_wallet->type,
             'token_name' => $isset_wallet->type_name
         ];
-
         return $response->json($res_data);
+    }
+    //获取用户中心所有用户钱包信息接口
+    public function GetAllWalletDetail(Request $request , Users $users,ResponseFactoryContract $response){
+        $user = $request->user;
+        $key = $user->key;
+        $data = $users->select('key');
+        return $response->json($isset_wallet);
     }
     //操作用户钱包接口
     public function ModifyWallet(Request $request,ResponseFactoryContract $response){

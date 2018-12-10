@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\APIS;
 
-
 use App\Models\Users;
 use App\Models\Platform;
+use App\Models\Certifications;
 use App\Models\VerificationCode;
 use App\Models\AuthCodeKey;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Routing\ResponseFactory as ResponseFactoryContract;
 
@@ -124,6 +125,83 @@ class UserController extends Controller
             return 'code:40031';
         }
     }
+    //上传用户图像
+    public function setUserAvatar(ResponseFactoryContract $response, Request $request){
+        if(!$user_id = $request->user_id && $request->file('useravatat')){
+            return $response->json(['message' => '参数不正确'], 422);
+        }
+        $avatar = $request->file('useravatat')->store('/public/uploads/useravatat/'. date('Y-m-d'));
+        //上传的头像字段avatar是文件类型
+        $avatar = Storage::url($avatar);
+        $data = ['certification_name'=>'useravatat','type' => 2, 
+        'created_at'=>time() ,'updated_at' => time() ,'path' => $avatar,'status' => 1, 'user_id' => $user_id];
+        $resource = Certifications::insertGetId($data);
+        if ($resource) {
+            return $response->json(['message' => '操作成功'], 200);
+        }
+        return $response->json(['message' => '操作失败'], 422);
+    }
+    //修改用户图像
+    public function uptUserAvatar(ResponseFactoryContract $response, Request $request){
+        if(!$user_id = $request->user_id && $request->file('useravatat')){
+            return $response->json(['message' => '参数不正确'], 422);
+        }
+        $avatar = $request->file('useravatat')->store('/public/uploads/useravatat/'. date('Y-m-d'));
+        //上传的头像字段avatar是文件类型
+        $avatar = Storage::url($avatar);
+        $data = ['updated_at' => time() ,'path' => $avatar];
+        $resource = Certifications::where('user_id' , $user_id)->where('type' , 2)->update($data);
+        if ($resource) {
+            return $response->json(['message' => '操作成功'], 200);
+        }
+        return $response->json(['message' => '操作失败'], 422);
+    }
+    //获取用户图像
+    public function getUserAvatar(ResponseFactoryContract $response, Request $request){
+        if(!$user_id = $request->user_id){
+            return $response->json(['message' => '参数不正确'], 422);
+        }
+        $resource = Certifications::where('user_id' , $user_id)->where('type' , 2)->get();
+        return $response->json($resource);
+    }
+    //用户认证
+    public function setAuthentication(ResponseFactoryContract $response, Request $request){
+        if(!$user_id = $request->user_id){
+            return $response->json(['message' => '参数不正确'], 422);
+        }
+        $avatar = $request->file('authentications')->store('/public/uploads/authentications/'. date('Y-m-d'));
+        //上传的头像字段avatar是文件类型
+        $avatar = Storage::url($avatar);
+        $data = ['certification_name'=>'authentication','type' => 1,
+        'created_at'=>time() ,'updated_at' => time() , 'path' => $avatar,'status' => 3, 'user_id' => $user_id];
+        $resource = Certifications::insertGetId($data);
+        if ($resource) {
+            return $response->json(['message' => '操作成功'], 200);
+        }
+        return $response->json(['message' => '操作失败'], 422);
+    }
+    //获取用户认证信息
+    public function getAuthentication(ResponseFactoryContract $response, Request $request,Users $users){
+        if(!$user_id = $request->user_id){
+            return $response->json(['message' => '参数不正确'], 422);
+        }
+        $user_certif = $users->where('users.id' , $user_id)
+        ->where('certifications.type' , 1)
+        ->leftJoin('certifications' , 'users.id' , '=' , 'certifications.user_id')->get();
+        return $response->json($user_certif);
+    }
+    //修改用户认证状态
+    public function updAuthentication(ResponseFactoryContract $response, Request $request,Certifications $certif){
+        if(!$user_id = $request->user_id && $status = $request->status){
+            return $response->json(['message' => '参数不正确'], 422);
+        } 
+        $user_certif = $certif->where('user_id' , $user_id)->update(['status' => $status , 'updated_at' => time()]);;
+        if ($user_certif) {
+            return $response->json(['message' => '操作成功'], 200);
+        }
+        return $response->json(['message' => '操作失败'], 422);
+    }
+    //生成用户token
     public function base_token($user_id,$time){
         $authcode = new AuthCodeKey();
         //获取用户key

@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Token extends Model
+class WithDrawalsApply extends Model
 {
     public $timestamps = false;
-    protected $table = 'token';
+    protected $table = 'withdrawals_apply';
 }
