@@ -68,6 +68,8 @@ Route::group(['prefix' => 'openadmin'],function (RouteContract $api){
     $api->post('usdtdet' , 'APIS\TokenController@usdtDeteil');
     //提现申请审核列表
     $api->post('getapplylist' , 'APIS\WithDrawalsController@lists');
+    //提现审核操作(通过/拒绝)
+    $api->post('examine' , 'APIS\WithDrawalsController@examine');
 });
 
 

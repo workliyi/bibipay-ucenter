@@ -41,6 +41,6 @@ class TokenController extends Controller
     public function usdtDeteil(UsdtDetail $usdtModel){
         $usdtModel = $usdtModel->first();
         return $usdtModel;
-}
+    }
 }
 
